@@ -14,19 +14,17 @@ class TwilioAuthController extends Controller
     {  
         try {
             $validated = Validator::make($req->all(),[
-                'name' => 'required|unique:users|max:255',
                 'first_name' => 'required',
-                'last_name' => 'required',
                 'email' => 'required|unique:users',
+                'name' => 'required|unique:users',
                 'password' => 'required|confirmed',
-                'phone_number' => 'required|unique:users',
             ]);
 
             if ($validated->fails()) {
                 $res['success'] = false;
                 $res['statusCode'] = 300;
                 $res['data'] = null;
-                $res['message'] = $validated->messages();
+                $res['message'] = $validated->messages()->all();
                 return $res;
             }
             $req['password'] = Hash::make($req['password']);
@@ -47,15 +45,16 @@ class TwilioAuthController extends Controller
             $account = $client->api->v2010->accounts->create(["friendlyName" => $req->name]);
             if($account)
             {
+                $user->update(['sid'=>$account->sid]);
                 $res['success'] = true;
                 $res['statusCode'] = 201;
-                $res['data']['twilio_user'] = $account;
+                $res['data']['twilio_user'] = $user;
                 $res['message'] = 'Successfully fetched';
             }
             else
             {
                 $res['success'] = true;
-                $res['statusCode'] = 201;
+                $res['statusCode'] = 400;
                 $res['data'] = null;
                 $res['message'] = 'Failed';
             }
@@ -104,7 +103,7 @@ class TwilioAuthController extends Controller
                 {
                     $res['success'] = true;
                     $res['statusCode'] = 201;
-                    $res['data'] = (array)$account;
+                    $res['data'] = $user;
                     $res['message'] = 'Successfully fetched';
                 }
                 else

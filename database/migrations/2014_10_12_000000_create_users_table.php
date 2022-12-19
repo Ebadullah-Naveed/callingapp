@@ -23,6 +23,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone_number')->unique();
             $table->string('sid')->nullable();
+            $table->boolean('is_subscriber')->default(false);
+            $table->string('otp')->nullable();
             $table->boolean('status')->default(true);
             $table->rememberToken();
             $table->timestamps();
